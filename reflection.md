@@ -31,18 +31,26 @@ None of these bugs crash the app or print anything in the terminal. They are all
 
 ## 2. How did you use AI as a teammate?
 
-- Which AI tools did you use on this project (for example: ChatGPT, Gemini, Copilot)?
-- Give one example of an AI suggestion that was correct (including what the AI suggested and how you verified the result).
-- Give one example of an AI suggestion you did not accept as written (including what the AI suggested, why you rejected or changed it, and how you verified your version). It does not have to be a suggestion that was wrong: over-engineered, out of scope, harder to read, or a poor fit for this codebase all count.
+**Tools:** I used Claude Code (Claude Opus 5.5) inside VS Code in agent mode. It read `app.py` and `logic_utils.py` together, ran the game, made multi-file edits and ran `pytest`, and I reviewed each diff and checked in at every checkpoint.
+
+**✅ A correct AI suggestion: the real cause of the lying hints was in `app.py`, not `check_guess`.**
+My first instinct was that `check_guess` just had its messages backwards. Claude traced it further. On every even attempt, `app.py` does `secret = str(st.session_state.secret)`, which makes `guess > secret` raise a `TypeError`. The `except TypeError` branch then compares strings alphabetically (`"9" > "50"` is True) and has its messages swapped. It suggested deleting the str conversion in `app.py` *and* the whole fallback branch, instead of patching the messages. I verified this by replaying the exact same game (secret 50; guesses 60, 40, 9, 70, 45, 55…) before and after. Before, 60 got "Go HIGHER!" on attempt 2. After, every guess got the right hint, and `test_single_digit_guess_is_compared_numerically` and `test_hint_is_the_same_on_every_attempt` pass.
+
+**⚠️ A misleading AI suggestion: the `try/except TypeError` "safety net" in the original code.**
+The AI-generated starter code looked defensive, as if it catches a type error and keeps going. In reality it hid the bug: instead of crashing loudly when an int was compared to a str, it silently gave wrong answers using alphabetical order. A crash would have pointed straight at the problem, while this "fallback" made the game look like it worked. I verified it by reading the branch line by line and seeing that `"9" > "50"` is `True` in Python. Lesson: a `try/except` that swallows an error is not automatically a fix.
+
+**❌ A suggestion I did not accept as written: making `check_guess` return just a string so the starter tests pass.**
+After the refactor, the 3 starter tests still failed. They do `assert check_guess(50, 50) == "Win"`, but `check_guess` returns a tuple, `("Win", "🎉 Correct!")`. The quickest way to turn the tests green was to change `check_guess` to return only the outcome string. I rejected that, because `app.py` needs both the outcome *and* the hint message, and the function's own docstring in `logic_utils.py` says it returns `(outcome, message)`. Changing the function to satisfy the tests would have made the tests pass and broken the game. Instead I kept the function's contract and changed the tests to unpack it: `outcome, _ = check_guess(50, 50)`. I verified this by running `pytest` (all tests pass) and replaying the game to confirm the hint messages still show up.
 
 ---
 
 ## 3. Debugging and testing your fixes
 
-- How did you decide whether a bug was really fixed?
-- Describe at least one test you ran (manual or using pytest)  
-  and what it showed you about your code.
-- Did AI help you design or understand any tests? How?
+I only counted a bug as fixed when it passed two checks: an automated `pytest` test targeting that bug, **and** a replay of the exact input from my Bug Reproduction Log in the running app. The second check mattered. The hint bug lived in `app.py` (turning the secret into a string), which unit tests on `check_guess` alone can't see. So I also replayed the full game with Streamlit's `AppTest` harness, which runs the real `app.py`, enters guesses and clicks buttons. The replay confirmed that 60 now says "Go LOWER!" on every attempt, typing `abc` no longer uses up an attempt, Normal allows all 8 guesses, and clicking New Game after losing actually starts a playable game.
+
+The pytest suite grew from 3 starter tests to 15. For example, `test_wrong_guess_never_adds_points` checks every attempt number from 1 to 8 and showed that a "Too High" guess now always costs 5 points instead of sometimes adding 5. `test_hard_range_is_wider_than_normal` encodes the rule that Hard should really be harder.
+
+AI helped design the tests. Claude proposed one test per bug in my reproduction log, plus parse_guess edge cases (blank input, whitespace, text). It also pointed out that the starter tests were comparing a tuple to a string (see section 2). Final result: `15 passed in 0.09s`.
 
 ---
 
