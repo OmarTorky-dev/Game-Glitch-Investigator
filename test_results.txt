@@ -1,0 +1,23 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\omart\OneDrive\Desktop\Github Repository\Game-Glitch-Investigator-main\.venv-1\Scripts\python.exe
+rootdir: C:\Users\omart\OneDrive\Desktop\Github Repository\Game-Glitch-Investigator-main
+plugins: anyio-4.15.1
+collecting ... collected 15 items
+
+tests/test_game_logic.py::test_winning_guess PASSED                      [  6%]
+tests/test_game_logic.py::test_guess_too_high PASSED                     [ 13%]
+tests/test_game_logic.py::test_guess_too_low PASSED                      [ 20%]
+tests/test_game_logic.py::test_too_high_message_says_go_lower PASSED     [ 26%]
+tests/test_game_logic.py::test_too_low_message_says_go_higher PASSED     [ 33%]
+tests/test_game_logic.py::test_single_digit_guess_is_compared_numerically PASSED [ 40%]
+tests/test_game_logic.py::test_hint_is_the_same_on_every_attempt PASSED  [ 46%]
+tests/test_game_logic.py::test_wrong_guess_never_adds_points PASSED      [ 53%]
+tests/test_game_logic.py::test_first_try_win_scores_100 PASSED           [ 60%]
+tests/test_game_logic.py::test_win_score_has_floor_of_10 PASSED          [ 66%]
+tests/test_game_logic.py::test_hard_range_is_wider_than_normal PASSED    [ 73%]
+tests/test_game_logic.py::test_parse_guess_valid_int PASSED              [ 80%]
+tests/test_game_logic.py::test_parse_guess_strips_whitespace PASSED      [ 86%]
+tests/test_game_logic.py::test_parse_guess_empty_and_blank PASSED        [ 93%]
+tests/test_game_logic.py::test_parse_guess_rejects_text PASSED           [100%]
+
+============================= 15 passed in 0.08s ==============================

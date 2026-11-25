@@ -56,13 +56,14 @@ AI helped design the tests. Claude proposed one test per bug in my reproduction 
 
 ## 4. What did you learn about Streamlit and state?
 
-- How would you explain Streamlit "reruns" and session state to a friend who has never used Streamlit?
+A Streamlit app is a Python script that runs **from top to bottom every time you interact with it**. Clicking a button, typing in a box, or changing the sidebar all trigger a "rerun" of the whole file. That means a normal variable like `secret = random.randint(1, 100)` would get a brand-new value on every click. `st.session_state` is a dictionary that survives reruns, like the app's memory for your browser tab. That's why the game only picks a secret `if "secret" not in st.session_state`. The rerun model also caused one of our bugs: the "Attempts left" banner was drawn near the top of the script, *before* the code further down processed the new guess, so it always showed the old number. The fix was to reserve a spot with `st.empty()` and fill it in at the end of the script, once the state was up to date.
 
 ---
 
 ## 5. Looking ahead: your developer habits
 
-- What is one habit or strategy from this project that you want to reuse in future labs or projects?
-  - This could be a testing habit, a prompting strategy, or a way you used Git.
-- What is one thing you would do differently next time you work with AI on a coding task?
-- In one or two sentences, describe how this project changed the way you think about AI generated code.
+**A habit I want to keep:** reproduce a bug with an exact input *before* fixing it, then rerun that same input afterward. Writing the Bug Reproduction Log first gave me a checklist, and replaying the same game (secret 50; guesses 60, 40, 9…) before and after was the clearest proof the fixes worked. I also liked splitting the work into small commits (log the bugs → mark the FIXMEs → apply the fixes → write the docs), so the history tells the story.
+
+**Something I'd do differently:** I'd ask the AI to explain the root cause before asking for a fix. My first instinct about the hint bug was "the messages are backwards", and I had already flipped them by hand before this session. That was only half the problem, because the real cause was the secret becoming a string in `app.py`. I'd also play-test the AI's choices sooner. The AI's proposal of Hard = 1–200 with 5 attempts looked reasonable on paper, but it was way too hard in practice, so I bumped it to 6 attempts.
+
+**How this changed my view of AI-generated code:** AI code can look clean and even "defensive" (like that `try/except TypeError`) while being quietly wrong. Now I treat it as a first draft that I have to run, test and question, and I only trust it once tests and a real playthrough agree.

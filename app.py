@@ -35,7 +35,9 @@ difficulty = st.sidebar.selectbox(
 attempt_limit_map = {
     "Easy": 6,
     "Normal": 8,
-    "Hard": 5,
+    # FIX: Raised from 5 to 6 after play-testing: with the wider 1-200 range,
+    # 5 attempts felt way too hard. My call; Claude made the edit.
+    "Hard": 6,
 }
 attempt_limit = attempt_limit_map[difficulty]
 
