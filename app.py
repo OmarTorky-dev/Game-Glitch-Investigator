@@ -35,9 +35,11 @@ def check_guess(guess, secret):
 
     try:
         if guess > secret:
-            return "Too High", "📈 Go HIGHER!"
+            return "Too High", "📈 Go LOWER!"
         else:
-            return "Too Low", "📉 Go LOWER!"
+            return "Too Low", "📉 Go HIGHER!"
+    # FIXME: Logic breaks here - when secret is a str, this falls back to
+    # alphabetical comparison ("9" > "50") and the hint messages are swapped.
     except TypeError:
         g = str(guess)
         if g == secret:
@@ -93,6 +95,7 @@ if "secret" not in st.session_state:
     st.session_state.secret = random.randint(low, high)
 
 if "attempts" not in st.session_state:
+    # FIXME: Off-by-one - starting at 1 means the player loses an attempt.
     st.session_state.attempts = 1
 
 if "score" not in st.session_state:
@@ -131,6 +134,8 @@ with col2:
 with col3:
     show_hint = st.checkbox("Show hint", value=True)
 
+# FIXME: Logic breaks here - New Game never resets status/history, sets attempts
+# to 0 (startup uses 1), and ignores the difficulty range.
 if new_game:
     st.session_state.attempts = 0
     st.session_state.secret = random.randint(1, 100)
@@ -155,6 +160,7 @@ if submit:
     else:
         st.session_state.history.append(guess_int)
 
+        # FIXME: Logic breaks here - every even attempt turns the secret into a str.
         if st.session_state.attempts % 2 == 0:
             secret = str(st.session_state.secret)
         else:
